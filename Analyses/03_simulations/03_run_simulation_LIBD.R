@@ -1,5 +1,5 @@
 rm(list = ls())
-source("./Analysis/03_simulations/02_simulation_function_data_specific.R")
+source("./Analyses/03_simulations/02_simulation_function_data_specific.R")
 ## download FULL data:
 LIBD_files <- list.files(path = "./DESpace_data/Data/LIBD",
                          pattern = "^15 *.*rda$", full.names = TRUE)

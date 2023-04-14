@@ -1,6 +1,6 @@
 rm(list = ls())
-source("./Analysis/03_simulations/02_simulation_function_data_specific.R")
-source("./05_individual_clusters/01_Individual_clusters_source_code.R")
+source("./Analyses/03_simulations/02_simulation_function_data_specific.R")
+source("./Analyses/05_individual_clusters/01_Individual_clusters_source_code.R")
 
 .individual_test_wrap <- function(sce, layer_names, sample_names, pattern_names, times_df){
   cluster_method <- NULL

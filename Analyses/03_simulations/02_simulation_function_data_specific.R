@@ -1,4 +1,4 @@
-source("./Analysis/03_simulations/01_simulation_basic_function.R")
+source("./Analyses/03_simulations/01_simulation_basic_function.R")
 
 Melanoma_simulation <- function(i,List_sce_one,
                                 coordinate_name = c("row","col"),

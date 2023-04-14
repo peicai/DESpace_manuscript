@@ -1,4 +1,4 @@
-source("./Analysis/06_real_data/01_methods_in_R_RealData.R")
+source("./Analyses/06_real_data/01_methods_in_R_RealData.R")
 
 ## LIBD data
 # load filtered data
