@@ -1,7 +1,7 @@
 # DESpace_manuscript
 This repository contains the code used for the analyses presented in the manuscript "DESpace: spatially variable gene detection via differential expression testing of spatial clusters".
 
-The scripts for all analysis are organized in the *./Analysis* folder:
+The scripts for all analysis are organized in the *./Analyses* folder:
 
 - `01_preprocessing`: to do quality control and filtering;
 - `02_run_methods`: to split mouse cerebellum *sce* to count matrix and meta data and scripts to run spatially variable gene detection methods in python;
