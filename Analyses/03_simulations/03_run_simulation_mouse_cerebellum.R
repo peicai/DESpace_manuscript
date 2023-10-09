@@ -33,12 +33,14 @@ foreach(j = c(1:5)) %dopar% {
                         my_dir = paste0("./DESpace_data/Simulation/Output/mouse_cerebellum"),
                         spatial_probs = spatial_probs,
                         SV_percent = SV_percent,
-                        spat_methods = c('SV_edgeR_counts','spark_x','meringue','spark','nnSVG'
+                        spat_methods = c('SV_edgeR_counts','spark_x','meringue','spark','nnSVG',
+                                         'scranMarker','seuratMarker'
                         ),
-                        spat_methods_params = list(NA,NA,NA,NA,NA
+                        spat_methods_params = list(NA,NA,NA,NA,NA,NA,NA
                         ),
                         spat_methods_names = c('SV_edgeR_counts','spark_x',
-                                               'meringue','spark','nnSVG'
+                                               'meringue','spark','nnSVG',
+                                               'scranMarker','seuratMarker'
                         ),
                         layer_names = "spatial.cluster",# Use re-computed BayesSpace clusters
                         original_layer_names = "stLearn_results.stLearn_pca_kmeans", # Use stLearn clusters to construct pattern
@@ -72,9 +74,9 @@ foreach(j = c(1:5)) %dopar% {
                             my_dir = paste0("./DESpace_data/Simulation/Output/mouse_cerebellum"),
                             spatial_probs = spatial_probs,
                             SV_percent = SV_percent,
-                            spat_methods = c('SV_edgeR_counts'),
-                            spat_methods_params = list(NA),
-                            spat_methods_names = c('SV_edgeR_counts'),
+                            spat_methods = c('SV_edgeR_counts','scranMarker','seuratMarker'),
+                            spat_methods_params = list(NA,NA,NA),
+                            spat_methods_names = c('SV_edgeR_counts','scranMarker','seuratMarker'),
                             layer_names =  "stLearn_pca_kmeans", # Use re-computed stLearn clusters
                             original_layer_names = "stLearn_results.stLearn_pca_kmeans", # Use stLearn clusters to construct pattern
                             default = default,

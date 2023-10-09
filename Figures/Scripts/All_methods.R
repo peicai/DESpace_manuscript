@@ -1,4 +1,5 @@
-library(RColorBrewer);
+#https://derekogle.com/NCGraphing/resources/colors
+library(RColorBrewer); library(ggplot2)
 all_colours = c(
   "#08306B", # "Manual_DESpace"
   "#A6CEE3", # "BayesSpace_DESpace"
@@ -8,23 +9,18 @@ all_colours = c(
   "#B2DF8A", # "SpatialDE"
   "#33A02C", # "SpatialDE2"
   "#F4A582", # "MERINGUE"
-  "#666666", # "SpaGCN"
-  "#C51B7D"  # "nnSVG"
+  "#BABABA",#"#666666", # "SpaGCN"
+  "#C51B7D",  # "nnSVG"
+  "plum2",# BayesSpace_scran_FindMarkers
+  "mediumpurple",# StLearn_scran_FindMarkers
+  "turquoise",# BayesSpace_seurat_FindAllMarkers
+  "turquoise4"# BayesSpace_seurat_FindAllMarkers
 )
 colours_CompuCost = c(
-   #"DESpace" = "#08306B",#"#41B6C4",
-   "BayesSpace" = "#A63603",#"#A6CEE3",
-   "StLearn" = "#A63603"#"#1F78B4"
+  "BayesSpace" = "#A63603",#"#A6CEE3",
+  "StLearn" = "#A63603"#"#1F78B4"
 )
-#"#F7FBFF" "#DEEBF7" "#C6DBEF" "#9ECAE1" "#6BAED6" "#4292C6" "#2171B5" "#08519C" "#08306B"
-#"#FFF7FB" "#ECE7F2" "#D0D1E6" "#A6BDDB" "#74A9CF" "#3690C0" "#0570B0" "#045A8D" "#023858"
-#"#FFFFD9" "#EDF8B1" "#C7E9B4" "#7FCDBB" "#41B6C4" "#1D91C0" "#225EA8" "#253494" "#081D58"
-#"#FFF7FB" "#ECE7F2" "#D0D1E6" "#A6BDDB" "#74A9CF" "#3690C0" "#0570B0" "#045A8D" "#023858"
-#"#A63603" "#E6550D" "#FD8D3C" "#FDBE85"
-#"#006837" "#31A354" "#78C679" "#C2E699"
-#"#E66101" "#FDB863" "#F7F7F7" "#B2ABD2" "#5E3C99"
-#"#CA0020" "#F4A582" "#FFFFFF" "#BABABA" "#404040"
-#brewer.pal(5, "RdGy")[1:5]    # scDD-perm 4 methods
+
 methods_all = c(
   "Manual_DESpace",
   "BayesSpace_DESpace",
@@ -35,7 +31,11 @@ methods_all = c(
   "SpatialDE2",
   "MERINGUE",
   "SpaGCN",
-  "nnSVG"
+  "nnSVG",
+  "BayesSpace_findMarkers",
+  "StLearn_findMarkers",
+  "BayesSpace_FindAllMarkers",
+  "StLearn_FindAllMarkers"
 )
 
 colors_method = all_colours
@@ -51,15 +51,18 @@ methods_order = c(
   "spatialDE2",
   "meringue",
   "SpaGCN",
-  "nnSVG"
+  "nnSVG",
+  "BayesSpace_findMarkers",
+  "StLearn_findMarkers",
+  "BayesSpace_FindAllMarkers",
+  "StLearn_FindAllMarkers"
 )
 colors_method2 = all_colours[-1]
 names(colors_method2) = methods_order
 # points, borders:
-shape_border = c(0, 1, 2, 5, 6, 3, 4, 8, 11)
+shape_border = c(0, 0, 0,1, 2, 5, 6, 3, 4, 8, 10, 10, 12, 12)
 # points, fill:
-shape_fill = c(15, 16, 17, 23, 25, 3, 4, 8, 11)
-
+shape_fill = c(15, 15, 15, 16, 17, 23, 25, 3, 4, 8, 10, 10, 12, 12)
 
 .prettify <- function(theme = NULL, ...) {
   if (is.null(theme)) theme <- "classic"

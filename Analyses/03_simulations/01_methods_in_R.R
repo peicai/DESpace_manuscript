@@ -1,6 +1,6 @@
 ### Run methods in R: 
 ### tool name (function name)
-### BayesSpace (clusters_BayesSpace), DESpace (SV_edgeR_counts), nnSVG (nnSVG.test), MERINGUE (meringue), SPARK (spark), SPARK-X (spark_x)
+### BayesSpace (clusters_BayesSpace), DESpace (SV_edgeR_counts), nnSVG (nnSVG.test), MERINGUE (meringue), SPARK (spark), SPARK-X (spark_x), FindAllMarkers(seuratMarker), findMarkers(scranMarker)
 
 suppressMessages({library(SingleCellExperiment)
   library(BiocParallel)
@@ -478,4 +478,246 @@ spark_x = function(sce_object,
     data.table::setorder(DT_results, adjustedPval, combinedPval)
     return(DT_results)
   }
+}
+
+scranMarker = function(sce_object,
+                       pval.type = "all", 
+                       test.type = c("t", "wilcox", "binom"),
+                       coordinate_name = c("row", "col"),
+                       covariates = NULL,
+                       return_object = c('data.table'),
+                       layer_names = "layer_guess_reordered",
+                       original_layer_names = "spatial.cluster",
+                       default = T,
+                       save = T,
+                       dir = "~",
+                       pattern_name = 'Manual_clusters_patch',
+                       cluster_method='BayesSpace',
+                       platform,
+                       ...) {
+  
+  set.seed(123)
+  # determine parameter
+  #return_object = match.arg(return_object, c('data.table'))
+  
+  # data.table variables
+  genes =  p.adj = p.value = NULL
+  
+  ## extract expression values from gobject
+  expr = assays(sce_object)$counts
+  
+  ## extract metadata from gobject
+  metadata = colData(sce_object)
+  covariates = cbind.data.frame(x=as.numeric(as.character(colData(sce_object)[[coordinate_name[1]]])),
+                                y=as.numeric(as.character(colData(sce_object)[[coordinate_name[2]]])))
+  colnames(covariates) <- c("image_x","image_y")
+  metadata <- cbind(metadata, covariates)
+  ## create SingleCellExperiment object
+  sce = SingleCellExperiment(assays=list(counts=expr), 
+                             colData=metadata)
+  
+  libsizes <- colSums(expr)
+  size.factors <- libsizes/mean(libsizes)
+  logcounts(sce) <- log2(t(t(expr)/size.factors) + 1)
+  metadata[[original_layer_names]] <- as.factor(metadata[[original_layer_names]])
+  if(default == T){
+    q = 10
+    
+  }else if(default == F){
+    if(pattern_name %in% c('circle_patch','right_patch','bottom_patch','StLearn_clusters_patch','BayesSpace_clusters_patch')){q=2}
+    else {q = length(unique(metadata[[original_layer_names]]))}
+  }
+  
+  print(paste0("num clusters: ", q))
+  if (q == 1){
+    stop("Error: the number of cluster must be at least 2.")
+  }
+  ## clusters
+  print(platform)
+  if (layer_names == "spatial.cluster"){
+    #sce <- clusters_BayesSpace(sce, q = q, platform = platform)
+    if(cluster_method == "BayesSpace"){
+      load(paste0(dir, 'sce_edgeR.rda'))
+    }
+  }else{
+    load(paste0(dir, cluster_method,'_sce_edgeR.rda'))
+  }
+  
+  layer = colData(sce)[[layer_names]] 
+  sce = sce[, !is.na(layer)]
+  
+  # if(cluster_method == 'BayesSpace'){
+  #   #save(sce, file = paste0(dir, 'sce_scran.rda'))
+  # }else {
+  #   save(sce, file = paste0(dir, cluster_method,'_sce_scran.rda'))}
+  # store again after removing NA layers:
+  layer = as.factor(colData(sce)[[layer_names]])
+  q = nlevels(layer)
+  print(paste0("new num clusters: ", q))
+  if (q == 1){
+    stop("Error: BayesSpace identifies one cluster.")
+  }
+  
+  scranResults <- scran::findMarkers(
+    sce, groups = layer, 
+    pval.type = pval.type,
+    test.type = test.type#, direction = direction
+  )
+  # do.call(cbind, scran_results)
+  #results <- do.call(rbind, lapply(scranResults, "[", 1:3))
+  save(scranResults, file = paste0(dir, cluster_method,'_scran_results.rda'))
+  ## return results ##
+  # if(return_object == 'data.table'){
+  #   DT_results = data.table::as.data.table(results)
+  #   gene_names = rownames(results)
+  #   DT_results[, genes := gene_names]
+  #   data.table::setorder(DT_results, FDR, p.value)
+  #   return(DT_results)
+  # }
+}
+
+seuratMarker = function(sce_object,
+                        coordinate_name = c("row", "col"),
+                        covariates = NULL,
+                        return_object = c('data.table'),
+                        layer_names = "layer_guess_reordered",
+                        original_layer_names = "spatial.cluster",
+                        default = T,
+                        save = T,
+                        dir = "~",
+                        pattern_name = 'Manual_clusters_patch',
+                        cluster_method='BayesSpace',
+                        platform,
+                        ...) {
+  
+  set.seed(123)
+  # determine parameter
+  #return_object = match.arg(return_object, c('data.table'))
+  
+  # data.table variables
+  genes =  p.adj = p.value = NULL
+  
+  ## extract expression values from gobject
+  expr = assays(sce_object)$counts
+  
+  ## extract metadata from gobject
+  metadata = colData(sce_object)
+  covariates = cbind.data.frame(x=as.numeric(as.character(colData(sce_object)[[coordinate_name[1]]])),
+                                y=as.numeric(as.character(colData(sce_object)[[coordinate_name[2]]])))
+  colnames(covariates) <- c("image_x","image_y")
+  metadata <- cbind(metadata, covariates)
+  
+  ## create SingleCellExperiment object
+  sce = SingleCellExperiment(assays=list(counts=expr), 
+                             colData=metadata)
+  ## create Seurat object (Not use as BayesSpace require sce as input)
+  ## seuratSCE <- CreateSeuratObject(counts = expr)
+  
+  libsizes <- colSums(expr)
+  size.factors <- libsizes/mean(libsizes)
+  ## seuratSCE <- NormalizeData(seuratSCE, normalization.method = "LogNormalize", scale.factor = size.factors)
+  logcounts(sce) <- log2(t(t(expr)/size.factors) + 1)
+  metadata[[original_layer_names]] <- as.factor(metadata[[original_layer_names]])
+  
+  if(default == T){
+    q = 10
+    
+  }else if(default == F){
+    if(pattern_name %in% c('circle_patch','right_patch','bottom_patch','StLearn_clusters_patch','BayesSpace_clusters_patch')){q=2}
+    else {q = length(unique(metadata[[original_layer_names]]))}
+  }
+  
+  print(paste0("num clusters: ", q))
+  if (q == 1){
+    stop("Error: the number of cluster must be at least 2.")
+  }
+  ## clusters
+  print(platform)
+  if (layer_names == "spatial.cluster"){
+    #sce <- clusters_BayesSpace(sce, q = q, platform = platform)
+    if(cluster_method == "BayesSpace"){
+      load(paste0(dir, 'sce_edgeR.rda'))
+    }
+  }else{
+    load(paste0(dir, cluster_method,'_sce_edgeR.rda'))
+  }
+  
+  layer = colData(sce)[[layer_names]] 
+  sce = sce[, !is.na(layer)]
+  
+  #if(cluster_method == 'BayesSpace'){save(sce, file = paste0(dir, 'sce_seurat.rda'))
+  #}else {save(sce, file = paste0(dir, cluster_method,'_sce_seurat.rda'))}
+  # store again after removing NA layers:
+  layer = as.factor(colData(sce)[[layer_names]])
+  q = nlevels(layer)
+  print(paste0("new num clusters: ", q))
+  if (q == 1){
+    stop("Error: BayesSpace identifies one cluster.")
+  }
+  
+  # seurat.sc <- as.Seurat(sce)
+  counts <- assays(sce)[[1]]
+  seurat <- CreateSeuratObject(counts = counts)
+  t2 <- seurat@meta.data
+  t <- data.frame(colData(sce))
+  t3 <- data.frame(t,t2)
+  seurat@meta.data <- t3
+  
+  Idents(seurat) <- layer
+  # find markers for every cluster compared to all remaining cells
+  seuratResults <- Seurat::FindAllMarkers(seurat,
+                                          logfc.threshold = -Inf,
+                                          min.pct = 0,
+                                          test.use = "wilcox",
+                                          min.diff.pt = -Inf,
+                                          min.cells.feature = 0,
+                                          min.cells.group = 0,
+                                          return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+  )
+  save(seuratResults, file = paste0(dir, cluster_method,'_seurat_results_rawcounts.rda'))
+  
+  # rm(seuratResults); set.seed(123)
+  # seuratResults <- Seurat::FindAllMarkers(seurat,
+  #                                         logfc.threshold = -Inf,
+  #                                         min.pct = 0,
+  #                                         test.use = "t",
+  #                                         min.diff.pt = -Inf,
+  #                                         min.cells.feature = 0,
+  #                                         min.cells.group = 0,
+  #                                         return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+  # )
+  # save(seuratResults, file = paste0(dir, cluster_method,'_seurat_results_t.rda'))
+  # 
+  # rm(seuratResults); set.seed(123)
+  # seuratResults <- Seurat::FindAllMarkers(seurat,
+  #                                           logfc.threshold = -Inf,
+  #                                           min.pct = 0,
+  #                                           test.use = "LR",
+  #                                           min.diff.pt = -Inf,
+  #                                           min.cells.feature = 0,
+  #                                           min.cells.group = 0,
+  #                                           return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+  # )
+  # save(seuratResults, file = paste0(dir, cluster_method,'_seurat_results_LR.rda'))
+  # 
+  # rm(seuratResults); set.seed(123)
+  # seuratResults <- Seurat::FindAllMarkers(seurat,
+  #                                         logfc.threshold = -Inf,
+  #                                         min.pct = 0,
+  #                                         test.use = "negbinom",
+  #                                         min.diff.pt = -Inf,
+  #                                         min.cells.feature = 0,
+  #                                         min.cells.group = 0,
+  #                                         return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+  # )
+  # save(seuratResults, file = paste0(dir, cluster_method,'_seurat_results_negbinom.rda'))
+  # 
+  ## return results ##
+  # if(return_object == 'data.table'){
+  #   DT_results = data.table::as.data.table(seuratResults)
+  #   gene_names = rownames(seuratResults)
+  #   DT_results[, genes := gene_names]
+  #   data.table::setorder(DT_results, p_val_adj, p_val)
+  #   return(DT_results)
+  # }
 }

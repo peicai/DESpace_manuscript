@@ -1,7 +1,10 @@
 ## Supp.Figure 11: FDR - multiple samples
 rm(list = ls())
 source("./Figures/Scripts/All_methods.R")
-source("./Figures/Scripts/Plots_Function.R")
+source("./Figures/Scripts/Plots_Functions.R")
+library(data.table)
+library(dplyr)
+library(iCOBRA)
 path_save = "./Figures/Figures/Supplementary/"
 path = "./Simulation/Output/"
 
@@ -24,12 +27,12 @@ shape_fill = shape_fill[1:2]
 k <- 1
 for(i in seq_along(patterns)){
   for(j in seq_along(sample_names)){
-    gg = roc_fdr_plot_multi_samples(
+    gg = roc_fdr_plot_multi_samples_DESpace(
       j,
       sample_names,
       pattern_names = patterns[i],
-      path = "./Simulation/Output/MultiSample/",
-      spatial_probs = c(0.5,0.8), colours = colours,
+      path = "./multi_samples/",
+      spatial_probs = c(0.5,0.7), colours = colours,
       shape_border = shape_border, shape_fill = shape_fill,
       dataset = dataset)
     gg_roc_LIBD[[k]] = gg[[1]]
@@ -86,12 +89,11 @@ AA = ggpubr::ggarrange( AA1, legend,
                         heights=c(9,1),
                         ncol = 1, nrow = 2 )
 
-spatial_probs = c(0.5,0.8)
+spatial_probs = c(0.5,0.7)
 ggsave(filename = paste0('MultipleSamples_',spatial_probs[1],'_',
                          spatial_probs[2],"_FDR_LIBD.pdf"),
        plot = AA,
        device = "pdf",
-       path = path_save,
        width = 35,
        height = 25,
        units = "in",
@@ -102,7 +104,10 @@ ggsave(filename = paste0('MultipleSamples_',spatial_probs[1],'_',
 ## For melanoma
 rm(list = ls())
 source("./Figures/Scripts/All_methods.R")
-source("./Figures/Scripts/Plots_Function.R")
+source("./Figures/Scripts/Plots_Functions.R")
+library(data.table)
+library(dplyr)
+library(iCOBRA)
 path_save = "./Figures/Figures/Supplementary/"
 path = "./Simulation/Output/"
 # remove the first "Manual_DESpace" color and method
@@ -121,12 +126,12 @@ patterns = c("right_pattern","circle_pattern",
 k=1
 for(i in seq_along(patterns)){
   for(j in seq_along(sample_names)){
-    gg = roc_fdr_plot_multi_samples(
+    gg = roc_fdr_plot_multi_samples_DESpace(
       j,
       sample_names,
       pattern_names = patterns[i],
-      path = "./Simulation/Output/MultiSample/",
-      spatial_probs = c(0.5,0.8), colours = colours,
+      path = "./multi_samples/",
+      spatial_probs = c(0.5,0.7), colours = colours,
       shape_border = shape_border, shape_fill = shape_fill,
       dataset = dataset)
     gg_roc_melanoma[[k]] = gg[[1]]
@@ -188,12 +193,11 @@ AA = ggpubr::ggarrange( AA1, AA2, AA3, AA4, legend,
                         widths = c(1,1,1,1,1),
                         ncol = 1, nrow = 5 )
 
-spatial_probs = c(0.5,0.8)
+spatial_probs = c(0.5,0.7)
 ggsave(filename = paste0('MultipleSamples_',spatial_probs[1],'_',
                          spatial_probs[2],"_FDR_melanoma.pdf"),
        plot = AA,
        device = "pdf",
-       path = path_save,
        width = 45,
        height = 35,
        units = "in",
