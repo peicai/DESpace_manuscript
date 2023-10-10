@@ -1145,7 +1145,7 @@ overall_roc_fdr_plot <- function(
       ## same as: 
       DF_COBRA <- COBRAData(pval,
                             padj,
-                            truth = data.frame(df2))
+                            truth = data.frame(combined_df2))
       perf <- calculate_performance(DF_COBRA, binary_truth = "status",aspects = "roc")
       roc_pval <- iCOBRA::roc(perf)
       DF_pval <- sapply(methods_all, function(x) {
@@ -1163,7 +1163,7 @@ overall_roc_fdr_plot <- function(
     if(plot == TRUE){
       DF_COBRA <- COBRAData(pval,
                             padj,
-                            truth = data.frame(df2))
+                            truth = data.frame(combined_df2))
         perf <- calculate_performance(DF_COBRA, binary_truth = "status",
                                       thrs = c(0.01, 0.05, 0.1, 0.2))
         cobra_plot <- prepare_data_for_plot(perf, colorscheme = colours, incloverall = FALSE,
