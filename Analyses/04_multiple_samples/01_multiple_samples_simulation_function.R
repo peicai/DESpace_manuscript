@@ -1,6 +1,6 @@
 # simulate data from multiple samples jointly (match the same genes as SV):
 ## only consider genes that pass filtering across all biological replicates (common genes);
-source('/home/peicai/project/SV/code/plots_function.R')
+#source('/home/peicai/project/SV/code/plots_function.R')
 suppressMessages({library(SingleCellExperiment)
   library(BiocParallel)
   library(scater)

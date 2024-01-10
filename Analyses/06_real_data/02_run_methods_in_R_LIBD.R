@@ -41,8 +41,11 @@ for(ii in c(1:12)){
   times[2] = b[3]
   names(times[2]) = "Manual_edgeR"
   print("BayesSpace_edgeR_counts")
-  c = system.time({
+  tt = system.time({
     sce_bayes <- clustes_BayesSpace(sce_one, q=7, platform='Visium')
+  })
+  save(sce_bayes, file = paste0(dir, 'BayesSpace_clusters.rda'))
+  c = system.time({
     SV_edgeR_counts(filtered_sce = sce_bayes,
                     num_core = 1,
                     covariates = NULL,
@@ -108,14 +111,170 @@ for(ii in c(1:12)){
   times[7] = g[3]
   names(times[7]) = "stLearn_edgeR"
   
+  h=system.time({
+    set.seed(123)
+    sce = sce_one
+    layer = colData(sce)[[layer_names]] 
+    sce = sce[, !is.na(layer)]
+    layer = as.factor(colData(sce)[[layer_names]])
+    scranResults <- scran::findMarkers(
+      sce, groups = layer, 
+      pval.type = "all",
+    )
+  })
+  save(scranResults, file = paste0(dir, 'Manual_scran_results.rda'))
+  times[8] = h[3]
+  names(times[8]) = "Manual_scran"
   
-  times[8] = sample
-  names(times[8]) = "sample_id"
+  layer_names = "layer_guess_reordered"
+  print("manual_seurat")
+  j=system.time({
+    set.seed(123)
+    sce = sce_one
+    layer = colData(sce)[[layer_names]] 
+    sce = sce[, !is.na(layer)]
+    layer = as.factor(colData(sce)[[layer_names]])
+    counts <- counts(sce)
+    seurat <- CreateSeuratObject(counts = counts)
+    t2 <- seurat@meta.data
+    t <- data.frame(colData(sce))
+    t3 <- data.frame(t,t2)
+    seurat@meta.data <- t3
+    
+    Idents(seurat) <- layer
+    # find markers for every cluster compared to all remaining cells
+    seuratResults <- Seurat::FindAllMarkers(seurat,
+                                            logfc.threshold = -Inf,
+                                            min.pct = 0,
+                                            test.use = "wilcox",
+                                            min.diff.pt = -Inf,
+                                            min.cells.feature = 0,
+                                            min.cells.group = 0,
+                                            return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+    )
+  })
+  save(seuratResults, file = paste0(dir, 'Manual_seurat_results.rda'))
+  times[9] = j[3]
+  names(times[9]) = "Manual_seurat"
+  
+  st_results_path <- paste0("./DESpace_data/Real/LIBD/",
+                            sample, "_stLearn_results.csv")
+  stLearn_results <- read.csv(st_results_path, sep = ',', header = TRUE)
+  colnames(stLearn_results) <- c("cell_ID","imagecol","imagerow","stLearn_pca_kmeans")
+  
+  CD <- colData(sce_one)
+  colData(sce_one) <- cbind(CD, stLearn_results$stLearn_pca_kmeans)
+  len = length(colnames(colData(sce_one)))
+  colnames(colData(sce_one))[len] <- "stLearn_pca_kmeans"
+  print("stLearn_scran")
+  layer_names = "stLearn_pca_kmeans"
+  
+  k = system.time({
+    set.seed(123)
+    sce = sce_one
+    layer = colData(sce)[[layer_names]] 
+    sce = sce[, !is.na(layer)]
+    layer = as.factor(colData(sce)[[layer_names]])
+    scranResults <- scran::findMarkers(
+      sce, groups = layer, 
+      pval.type = "all",
+    )
+  })
+  
+  save(scranResults, file = paste0(dir, 'StLearn_scran_results.rda'))
+  times[10] = k[3]
+  names(times[10]) = "StLearn_scran"
+  
+  layer_names = "stLearn_pca_kmeans"
+  l=system.time({
+    set.seed(123)
+    sce = sce_one
+    layer = colData(sce)[[layer_names]] 
+    sce = sce[, !is.na(layer)]
+    layer = as.factor(colData(sce)[[layer_names]])
+    counts <- counts(sce)
+    seurat <- CreateSeuratObject(counts = counts)
+    t2 <- seurat@meta.data
+    t <- data.frame(colData(sce))
+    t3 <- data.frame(t,t2)
+    seurat@meta.data <- t3
+    
+    Idents(seurat) <- layer
+    # find markers for every cluster compared to all remaining cells
+    seuratResults <- Seurat::FindAllMarkers(seurat,
+                                            logfc.threshold = -Inf,
+                                            min.pct = 0,
+                                            test.use = "wilcox",
+                                            min.diff.pt = -Inf,
+                                            min.cells.feature = 0,
+                                            min.cells.group = 0,
+                                            return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+    )
+  })
+  save(seuratResults, file = paste0(dir, 'StLearn_seurat_results.rda'))
+  times[11] = l[3]
+  names(times[11]) = "StLearn_seurat"
+  
+  layer_names = "spatial.cluster"
+  i = system.time({
+    set.seed(123)
+    sce = sce_bayes
+    layer = colData(sce)[[layer_names]] 
+    sce = sce[, !is.na(layer)]
+    layer = as.factor(colData(sce)[[layer_names]])
+    scranResults <- scran::findMarkers(
+      sce, groups = layer, 
+      pval.type = "all",
+    )
+  })
+  save(scranResults, file = paste0(dir, 'BayesSpace_scran_results.rda'))
+  times[12] = i[3]
+  names(times[12]) = "BayesSpace_scran"
+  
+  layer_names = "spatial.cluster"
+  q = system.time({
+    set.seed(123)
+    sce = sce_bayes
+    layer = colData(sce)[[layer_names]] 
+    sce = sce[, !is.na(layer)]
+    layer = as.factor(colData(sce)[[layer_names]])
+    counts <- counts(sce)
+    seurat <- CreateSeuratObject(counts = counts)
+    t2 <- seurat@meta.data
+    t <- data.frame(colData(sce))
+    t3 <- data.frame(t,t2)
+    seurat@meta.data <- t3
+    
+    Idents(seurat) <- layer
+    # find markers for every cluster compared to all remaining cells
+    seuratResults <- Seurat::FindAllMarkers(seurat,
+                                            logfc.threshold = -Inf,
+                                            min.pct = 0,
+                                            test.use = "wilcox",
+                                            min.diff.pt = -Inf,
+                                            min.cells.feature = 0,
+                                            min.cells.group = 0,
+                                            return.thresh = 2#, min.pct = 0.25, logfc.threshold = 0.25
+    )
+  })
+  save(seuratResults, file = paste0(dir, 'BayesSpace_seurat_results.rda'))
+  times[13] = q[3]
+  names(times[13]) = "BayesSpace_seurat"
+  
+  times[14] = sample
+  names(times[14]) = "sample_id"
+  
+  times[15] = tt[3]
+  names(times[15]) = "BayesSpace_cluster"
   
   times_all = rbind(times_all,times)
   print(paste0("finish:",sample))
 }
-colnames(times_all) <- c("SPARK","Manual_edgeR_counts","BayesSpace_edgeR",#"nnSVG",
-                         "SPARK-X","MERINGUE","nnSVG","stLearn_edgeR","sample_id")
+colnames(times_all) <- c("SPARK","Manual_edgeR_counts","BayesSpace_edgeR",
+                         "SPARK-X","MERINGUE","nnSVG","stLearn_edgeR",
+                         "Manual_scran",
+                         "Manual_seurat","StLearn_scran",
+                         "StLearn_seurat","BayesSpace_scran","BayesSpace_seurat","sample_id",
+                         "BayesSpace_cluster")
 
 write.csv(times_all, paste0("./DESpace_data/Real/LIBD/computational_cost.csv"))

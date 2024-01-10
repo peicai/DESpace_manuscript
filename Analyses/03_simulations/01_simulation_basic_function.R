@@ -557,8 +557,10 @@ run_spatial_sim_tests_methods = function(sce_object = final_object,raw_sce = raw
       if(!selected_method %in% c(#'spatialDE,
         'nnSVG2','spark_x2',
         'spark', 'spark_x',#'SV_DESeq2,
-        'SV_edgeR_counts',#'SV_edgeR_CPMs,
-        'meringue', 'nnSVG')) {
+        'SV_edgeR_counts','SV_edgeR_logCPMs',
+        'meringue', 'nnSVG',
+        'scranMarker', 'seuratMarker',
+        'SV_limma', 'SV_DESeq2')) {
         stop(selected_method, ' is not a know spatial method \n')
       }
       print(selected_method)
@@ -591,12 +593,30 @@ run_spatial_sim_tests_methods = function(sce_object = final_object,raw_sce = raw
                                    coordinate_name = coordinate_name,
                                    num_core = 3,
                                    layer_names = layer_names,
+                                   cluster_method = cluster_method,
                                    dir = dir,
                                    return_object = c('data.table'))
             
             
             
           } else if(selected_method %in% c('SV_edgeR_counts')) {
+            selected_params = list(sce_object = sce_object,
+                                   min_count = 0,
+                                   coordinate_name = coordinate_name,
+                                   num_core = 1,
+                                   #prior.count = 10, # edgeR:cpm
+                                   covariates = NULL,
+                                   return_object = c('data.table'),
+                                   layer_names = layer_names,
+                                   original_layer_names = original_layer_names,
+                                   default = default,
+                                   save = F,
+                                   dir = dir,
+                                   pattern_name = pattern_name,
+                                   cluster_method = cluster_method,
+                                   platform = platform)
+            
+          } else if(selected_method %in% c('SV_edgeR_logCPMs')) {
             selected_params = list(sce_object = sce_object,
                                    min_count = 0,
                                    coordinate_name = coordinate_name,
@@ -611,8 +631,7 @@ run_spatial_sim_tests_methods = function(sce_object = final_object,raw_sce = raw
                                    dir = dir,
                                    pattern_name = pattern_name,
                                    cluster_method = cluster_method,
-                                   platform = platform)
-            
+                                   platform = platform)  
             
           } else if(selected_method == 'meringue') {
             selected_params = list(sce_object = sce_object,
@@ -632,13 +651,73 @@ run_spatial_sim_tests_methods = function(sce_object = final_object,raw_sce = raw
                                    return_object = c('data.table')
             )
             
+            
           } else if(selected_method == 'nnSVG2') {
             selected_params = list(sce_object = sce_object,
                                    coordinate_name = coordinate_name,
                                    num_core = 3,
                                    layer_names = layer_names,
                                    dir = dir,
-                                   return_object = c('data.table'))
+                                   cluster_method = cluster_method,
+                                   return_object = c('data.table')
+            )
+          } else if(selected_method == 'scranMarker') {
+            selected_params = list(sce_object = sce_object,
+                                   pval.type = "all", 
+                                   test.type = c("t", "wilcox", "binom"),
+                                   coordinate_name = coordinate_name,
+                                   num_core = 4,
+                                   return_object = c('data.table'),
+                                   layer_names = layer_names,
+                                   original_layer_names = original_layer_names,
+                                   default = default,
+                                   save = F,
+                                   dir = dir,
+                                   pattern_name = pattern_name,
+                                   cluster_method = cluster_method,
+                                   platform = platform
+            )
+          } else if(selected_method == 'SV_limma') {
+            selected_params = list(sce_object = sce_object,
+                                   coordinate_name = coordinate_name,
+                                   return_object = c('data.table'),
+                                   layer_names = layer_names,
+                                   original_layer_names = original_layer_names,
+                                   default = default,
+                                   save = F,
+                                   dir = dir,
+                                   pattern_name = pattern_name,
+                                   cluster_method = cluster_method,
+                                   platform = platform
+            )
+          } else if(selected_method == 'SV_DESeq2') {
+            selected_params = list(sce_object = sce_object,
+                                   coordinate_name = coordinate_name,
+                                   return_object = c('data.table'),
+                                   layer_names = layer_names,
+                                   original_layer_names = original_layer_names,
+                                   default = default,
+                                   save = F,
+                                   dir = dir,
+                                   pattern_name = pattern_name,
+                                   cluster_method = cluster_method,
+                                   platform = platform
+            )
+          } else if(selected_method == 'seuratMarker') {
+            selected_params = list(sce_object = sce_object,
+                                   coordinate_name = coordinate_name,
+                                   num_core = 4,
+                                   return_object = c('data.table'),
+                                   layer_names = layer_names,
+                                   original_layer_names = original_layer_names,
+                                   default = default,
+                                   save = F,
+                                   dir = dir,
+                                   pattern_name = pattern_name,
+                                   cluster_method = cluster_method,
+                                   platform = platform
+            )
+            
           }
           # end if selected_method
         } # end if is.na(selected_params)
@@ -732,19 +811,19 @@ run_spatial_sim_tests_methods = function(sce_object = final_object,raw_sce = raw
         #print(class(spark_spatialgenes_sim))
         #print(str(spark_spatialgenes_sim))
         #print(gene_name)
-        sparkx_result = sparkx_spatialgenes_sim#[genes == gene_name]
-        sparkx_time = proc.time() - start
-        
-        sparkx_result[, pres := rep_i]
-        sparkx_result[, time := sparkx_time[['elapsed']] ]
-        
-        spatial_gene_results = sparkx_result[,.(genes, adjustedPval,combinedPval, pres, time)]
-        colnames(spatial_gene_results) = c('genes', 'adj.p.value','p.value', 'repetition', 'time')
-        spatial_gene_results[, method := 'spark_x_with_clusters']
-        
-        #subdir = paste0(save_dir,'/',pattern_name,'/')
-        save(spatial_gene_results, file = paste0(dir,"result_SV_spark_x_with_clusters_new.rda"))
-        
+        # sparkx_result = sparkx_spatialgenes_sim#[genes == gene_name]
+        # sparkx_time = proc.time() - start
+        # 
+        # sparkx_result[, pres := rep_i]
+        # sparkx_result[, time := sparkx_time[['elapsed']] ]
+        # 
+        # spatial_gene_results = sparkx_result[,.(genes, adjustedPval,combinedPval, pres, time)]
+        # colnames(spatial_gene_results) = c('genes', 'adj.p.value','p.value', 'repetition', 'time')
+        # spatial_gene_results[, method := 'spark_x_with_clusters']
+        # 
+        # #subdir = paste0(save_dir,'/',pattern_name,'/')
+        # save(spatial_gene_results, file = paste0(dir,"result_SV_spark_x_with_clusters_new.rda"))
+        # 
         
       } else if(selected_method == 'meringue') 
       {
@@ -801,34 +880,101 @@ run_spatial_sim_tests_methods = function(sce_object = final_object,raw_sce = raw
         #print(class(spark_spatialgenes_sim))
         #print(str(spark_spatialgenes_sim))
         #print(gene_name)
-        nnSVG_result = nnSVG_spatialgenes_sim#[genes == gene_name]
-        nnSVG_time = proc.time() - start
+        # nnSVG_result = nnSVG_spatialgenes_sim#[genes == gene_name]
+        # nnSVG_time = proc.time() - start
+        # 
+        # nnSVG_result[, pres := rep_i]
+        # nnSVG_result[, time := nnSVG_time[['elapsed']] ]
+        # 
+        # spatial_gene_results = nnSVG_result[,.(genes, padj, pval, pres, time)]
+        # colnames(spatial_gene_results) = c('genes', 'adj.p.value', 'p.value', 'repetition', 'time')
+        # spatial_gene_results[, method := 'nnSVG_with_clusters']
+        # 
+        # #subdir = paste0(save_dir,'/',pattern_name,'/')
+        # save(spatial_gene_results, file = paste0(dir,"result_SV_nnSVG_with_clusters_new.rda"))
         
-        nnSVG_result[, pres := rep_i]
-        nnSVG_result[, time := nnSVG_time[['elapsed']] ]
+      } else if(selected_method == 'SV_edgeR_logCPMs') 
+      {
+        message('Method: SV_edgeR_logCPMs with BayesSpace clusters')
+        ## spark
+        start = proc.time()
+        print(sce_object)
+        Sv_edgeR_CPMs_spatialgenes_sim = do.call('SV_edgeR_logCPMs', c(
+          selected_params)) 
         
-        spatial_gene_results = nnSVG_result[,.(genes, padj, pval, pres, time)]
-        colnames(spatial_gene_results) = c('genes', 'adj.p.value', 'p.value', 'repetition', 'time')
-        spatial_gene_results[, method := 'nnSVG_with_clusters']
+      } else if(selected_method == 'SV_limma') 
+      {
+        message('Method: limma with BayesSpace clusters')
+        ## spark
+        start = proc.time()
+        print(sce_object)
+        limma_spatialgenes_sim = do.call('SV_limma', c(
+          selected_params))
+      } else if(selected_method == 'SV_DESeq2') 
+      {
+        message('Method: DESeq2 with BayesSpace clusters')
+        ## spark
+        start = proc.time()
+        print(sce_object)
+        DESeq2_spatialgenes_sim = do.call('SV_DESeq2', c(
+          selected_params))  
+        # DESeq2_result = DESeq2_spatialgenes_sim#[genes == gene_name]
+        # DESeq2_time = proc.time() - start
+        # 
+        # DESeq2_result[, pres := rep_i]
+        # DESeq2_result[, time := DESeq2_time[['elapsed']] ]
+        # 
+        # spatial_gene_results = DESeq2_result[,.(genes, padj, pval, pres, time)]
+        # colnames(spatial_gene_results) = c('genes', 'adj.p.value', 'p.value', 'repetition', 'time')
+        # spatial_gene_results[, method := 'DESeq2']
+        # 
+        # #subdir = paste0(save_dir,'/',pattern_name,'/')
+        # save(spatial_gene_results, file = paste0(dir,"result_SV_DESeq2.rda"))
+      } else if(selected_method == 'scranMarker') 
+      {
+        message('Method: scranMarker with BayesSpace clusters')
+        ## spark
+        start = proc.time()
+        print(sce_object)
+        scranMarker_spatialgenes_sim = do.call('scranMarker', c(
+          selected_params))
+        #print(class(spark_spatialgenes_sim))
+        #print(str(spark_spatialgenes_sim))
+        #print(gene_name)
+        # scranMarker_result = scranMarker_spatialgenes_sim#[genes == gene_name]
+        # scranMarker_time = proc.time() - start
+        # 
+        # scranMarker_result[, pres := rep_i]
+        # scranMarker_result[, time := scranMarker_time[['elapsed']] ]
+        # 
+        # spatial_gene_results = scranMarkerresult[,.(genes, padj, pval, pres, time)]
+        # colnames(spatial_gene_results) = c('genes', 'adj.p.value', 'p.value', 'repetition', 'time')
+        # spatial_gene_results[, method := 'scranMarker_with_clusters']
+        # 
+        # #subdir = paste0(save_dir,'/',pattern_name,'/')
+        # save(spatial_gene_results, file = paste0(dir,"result_SV_scranMarker_with_clusters.rda"))
         
-        #subdir = paste0(save_dir,'/',pattern_name,'/')
-        save(spatial_gene_results, file = paste0(dir,"result_SV_nnSVG_with_clusters_new.rda"))
         
+      } else if(selected_method == 'seuratMarker') 
+      {
+        message('Method: seuratMarker with BayesSpace clusters')
+        ## spark
+        start = proc.time()
+        print(sce_object)
+        seuratMarker_spatialgenes_sim = do.call('seuratMarker', c(
+          selected_params))
       }
+      #result_list[[test]] = spatial_gene_results
       
-      result_list[[test]] = spatial_gene_results
+      
+      #save(result_list, file = paste0(dir,"/result_list_all.rda"))
+      #   results = data.table::rbindlist(l = result_list)
+      #   return(results)
+      #   
+    }} else {
+      return(NULL)
     }
-    
-    save(result_list, file = paste0(dir,"/result_list_all.rda"))
-    results = data.table::rbindlist(l = result_list)
-    return(results)
-    
-  } else {
-    return(NULL)
-  }
 }
-
-
 #' @title runPatternSimulation
 #' @name runPatternSimulation
 #' @description Creates a known spatial pattern for selected genes one-by-one and runs the different spatial gene detection tests
