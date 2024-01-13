@@ -6,7 +6,7 @@ library(dplyr)
 library(iCOBRA)
 path_save = "./Figures/Figures/Simulated"
 raw_path = "./Simulation/Output/MultiSample/"
-spatial_probs = c(0.5,0.8)
+spatial_probs = c(0.5,0.7)
 # remove the first "Manual_DESpace" color
 #colours = c(all_colours[c(2,3,12,14)],"burlywood3", "darkgoldenrod1", "gold", "white")
 
@@ -22,7 +22,7 @@ for(i in seq_along(patterns)){
   gg = overall_roc_fdr_plot_multi_samples(
     pattern_names = patterns[i],
     path = "./multi_samples/",
-    spatial_probs = c(0.5,0.8), all_colours = all_colours,
+    spatial_probs = c(0.5,0.7), all_colours = all_colours,
     shape_border = shape_border, shape_fill = shape_fill,
     dataset = dataset)
   gg_roc_LIBD[[i]] = gg[[1]]
@@ -39,7 +39,7 @@ for(i in seq_along(patterns)){
   gg = overall_roc_fdr_plot_multi_samples(
     pattern_names = patterns[i],
     path ="./multi_samples/",
-    spatial_probs = c(0.5,0.8), all_colours = all_colours,
+    spatial_probs = c(0.5,0.7), all_colours = all_colours,
     shape_border = shape_border, shape_fill = shape_fill,
     dataset = dataset)
   gg_roc_melanoma[[i]] = gg[[1]]
