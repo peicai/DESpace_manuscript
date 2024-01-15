@@ -1,25 +1,15 @@
 rm(list = ls())
-<<<<<<< HEAD:Figures_Tables/Scripts/Fig_Barplot_Jarccard_index.R
-=======
-# library(S4Vectors)
-# library(stringr)
-# library(dplyr)
->>>>>>> origin/main:Figures/Scripts/Fig_Barplot_Jarccard_index.R
 path = "./Real_data/results/"
 path_save = "./Figures/Figures/Supplementary/"
 source("./Figures/Scripts/All_methods.R")
-source("./Figures/Scripts/Plots_Functions.R")
+source("./Figures/Scripts/Plots_Function.R")
 ############################ For LIBD ###################################
 data = 'LIBD'
 sample_names = c("151507", "151508", "151509", "151510",
                  "151669", "151670", "151671", "151672",
                  "151673", "151674", "151675", "151676")
 list_result_LIBD <- list()
-<<<<<<< HEAD:Figures_Tables/Scripts/Fig_Barplot_Jarccard_index.R
 ##################### scripts for generating "All_methods_genes_order.rda" ############################
-
-=======
->>>>>>> origin/main:Figures/Scripts/Fig_Barplot_Jarccard_index.R
 # list_result_LIBD <- process_data(
 #    path = path,
 #    data = 'LIBD', Manual = TRUE,
@@ -52,11 +42,8 @@ sample_names = c("mel1_rep1", "mel1_rep2",
                  "mel3_rep1", "mel3_rep2",
                  "mel4_rep1", "mel4_rep2")
 list_result_melanoma <- list()
-<<<<<<< HEAD:Figures_Tables/Scripts/Fig_Barplot_Jarccard_index.R
 
 ##################### scripts for generating "All_methods_genes_order.rda" ############################
-=======
->>>>>>> origin/main:Figures/Scripts/Fig_Barplot_Jarccard_index.R
 #  list_result_melanoma <- process_data(
 #    path = path,
 #    data = 'melanoma', Manual = FALSE,
@@ -132,11 +119,11 @@ gg_Bar_melanoma2 <- gg_Bar_melanoma +
 ),
 bottom = ggpubr::get_legend(gg_legend),
 ncol = 2, nrow = 1))
-ggsave(filename = paste0(path_save,"Barplot_Jaccrd.pdf"),
-       plot = AA,
-       device = "pdf",
-       width = 25,
-       height = 15,
-       units = "in",
-       dpi = 300,
-       limitsize = TRUE)
+
+png(filename = paste0(path_save,"Barplot_Jaccrd.pdf"), 
+    width = 25, height = 15, units = "in",
+    pointsize = 12, bg = "white", res = 300)   
+
+AA
+
+dev.off()

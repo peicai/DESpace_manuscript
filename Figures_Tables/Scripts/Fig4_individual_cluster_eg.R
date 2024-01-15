@@ -66,13 +66,10 @@ AA = ggpubr::ggarrange( AA1 + labs(title = "MOBP")+ theme(plot.title = element_t
                          ncol = 4, nrow = 1)
 
 path_save = "./Figures/Figures/Supplementary/"
-ggsave(filename = paste0('Individual_cluster_examples.pdf'),
-       plot = AA,
-       device = "pdf",
-       path = path_save,
-       width = 15,
-       height = 5,
-       units = "in",
-       dpi = 300,
-       limitsize = TRUE)
+png(filename = "Individual_cluster_examples.png", 
+    width = 15, height = 5, units = "in",
+    pointsize = 12, bg = "white", res = 300)   
 
+AA
+
+dev.off()

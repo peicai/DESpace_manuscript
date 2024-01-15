@@ -53,12 +53,10 @@ results_sub_C = results_sub
                                    LIBD_B + labs(title = "Circular")+ theme(plot.title = element_text(hjust = 0.5, face = "bold", size=12)),
                                    LIBD_C + labs(title = "Annotations")+ theme(plot.title = element_text(hjust = 0.5, face = "bold", size=12))),ncol = 3, nrow = 1))
 path_save = "./Figures/Figures/Simulated/"
-ggsave(filename = paste0(path_save,"Expression_plot.pdf"),
-       plot = AA,
-       device = "pdf",
-       width = 10,
-       height = 4.5,
-       units = "in",
-       dpi = 300,
-       limitsize = TRUE)
+png(filename = paste0(path_save,"Expression_plot.png"), 
+    width = 10, height = 4.5, units = "in",
+    pointsize = 12, bg = "white", res = 300)   
 
+AA
+
+dev.off()
